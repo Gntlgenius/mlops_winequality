@@ -3,11 +3,12 @@
 
 import os
 import argparse
-from get_data import get_data
+from get_data import get_data, read_params
 
 
 def load_and_save(config_path):
-    df, config = get_data(config_path)
+    config = read_params(config_path)
+    df = get_data(config_path)
     new_col = [col.replace(" ", "_") for col in df.columns]
     df.columns = new_col
     raw_data_path  = config["load_data"]["raw_dataset_csv"]
