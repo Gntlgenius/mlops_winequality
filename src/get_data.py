@@ -11,7 +11,9 @@ import argparse
 def get_data(config_path):
     with open(config_path) as yaml_file:
         config = yaml.safe_load(yaml_file)
-    print(config)
+    data_path = config["data_source"]["source"]
+    df = pd.read_csv(data_path, sep=",", encoding = "utf-8")
+    return df
 
 if __name__=="__main__":
     args = argparse.ArgumentParser()
