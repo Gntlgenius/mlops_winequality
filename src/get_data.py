@@ -13,7 +13,7 @@ def get_data(config_path):
         config = yaml.safe_load(yaml_file)
     data_path = config["data_source"]["source"]
     df = pd.read_csv(data_path, sep=",", encoding = "utf-8")
-    return df
+    return df, config
 
 if __name__=="__main__":
     args = argparse.ArgumentParser()
