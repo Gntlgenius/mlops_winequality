@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import numpy as np
-from prediction_service import prediction, predict_mgt
+from prediction_service import predict_mgt
 
 
 
