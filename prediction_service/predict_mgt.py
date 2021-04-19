@@ -27,5 +27,3 @@ def api_response(request):
         error = {"error":"Something went wrong in api_response"}
         return error
     
-    
-    return prediction[0]
