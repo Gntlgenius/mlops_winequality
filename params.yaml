@@ -30,3 +30,5 @@ reports:
   params: reports/params.json
   scores: reports/scores.json
 
+model_dir: prediction_service\model\model.joblib
+
