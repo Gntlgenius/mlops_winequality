@@ -3,80 +3,98 @@ import os
 import joblib
 import numpy as np
 import json
-from src.get_data import read_params
-from prediction_service.input_check import input_val_mgt
-from prediction_service.error_and_exceptions import NotInRange, NotInColumn
 
 
-params_path = "../params.yaml"
-schema_path = "schema.json"
+params_path ="params.yaml"
+schema_path = os.path.join("prediction_service", "schema.json")
 
-class predictor:
-    def __init__(self, data):
-        self.data = data
-        self.schema_path = schema_path
-        self.params = params_path
-        self.range_error = NotInRange
-        self.col_error = NotInColumn
-        self.validat_input = input_val_mgt(self.data, self.schema_path)
+
+
+class NotInRange(Exception):
+    def __init__(self, message = "values entered not in range"):
+        self.message = message
+        super().__init__(self.message)
+
+class NotInColumn(Exception):
+    def __init__(self, message = "values entered not in column"):
+        self.message = message
+        super().__init__(self.message)
+
+
+def get_schema(schema_path=schema_path):
+    with open(schema_path) as json_file:
+        schema = json.load(json_file)
+    return schema
+
+def read_params(config_path=params_path):
+    with open(config_path) as yaml_file:
+        config = yaml.safe_load(yaml_file)
+    return config
+
+
+def predict(data):
+    config = read_params(params_path)
+    model_path = config['model_dir']
+    model = joblib.load(model_path)
+    prediction = model.predict(data).tolist()[0]
+
+    try:
+        if 3 <= prediction <= 8:
+            return prediction
+        else:
+            raise NotInRange
+    except NotInRange:
+        return "unexpected result"
+
+
+
+def data_validation(dict_req):
+    def col_validation(col):
+        schema = get_schema()
+        actual_cols = schema.keys()
+        if col not in actual_cols:
+            raise NotInColumn
+
+
+    def val_validation(col, val):
+        schema = get_schema()
+
+        if not (schema[col]['min'] <= float(dict_req[col]) <= schema[col]['max']):
+            raise NotInRange
+
+    for col, val in dict_req.items():
+        col_validation(col)
+        val_validation(col, val)
+
+    return True
+
+
+
+def form_response(dict_req):
+    if data_validation(dict_req):
+            data = dict_req.values()
+            data = [list(map(float, data))]
+            response = predict(data)
+            return response
     
 
-    def predict(self, input_data):
-        if self.validat_input.validate_input():
-            config = read_params(self.params)
-            model_path = config["model_dir"]
-            model = joblib.load(model_path)
-            prediction = model.predict(input_data).to_list()[0]
-            try:
-                if 3 <= prediction <= 8:
-                    return prediction
-                else:
-                    raise self.range_error
-
-            except NotInRange:
-                return "Unexpected result"
-
-    def form_response(self):
-        if self.validat_input.validate_input():
-            response = self.predict(self.data)
+    
+def api_response(dict_req):
+    try:
+        if data_validation(dict_req):
+            data = np.array([list(dict_req.values())])
+            response = predict(data)
             return response
 
+    except NotInRange as e:
+        response = {"the_exected_range": get_schema(), "response": str(e) }
+        return response
 
-    def api_response(self):
-        try:
-            if self.validat_input.validate_input():
-                data = np.array([list(self.data.json.values())])
-                response = self.predict(data)
-                response = {'response':response}
-            return response
-        
-        except Exception as e:
-            print (e)
-            error = {"error": str(e)}
-            return error
+    except NotInCols as e:
+        response = {"the_exected_cols": get_schema().keys(), "response": str(e) }
+        return response
 
 
-        
-
-    
-
-
-
-    
-
-
-
-            
-            
-
-
-
-
-    
-
-
-
-
-
-
-
+    except Exception as e:
+        response = {"response": str(e) }
+        return response
