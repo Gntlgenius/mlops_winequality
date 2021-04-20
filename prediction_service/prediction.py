@@ -85,6 +85,7 @@ def api_response(dict_req):
         if data_validation(dict_req):
             data = np.array([list(dict_req.values())])
             response = predict(data)
+            response = {'response':response}
             return response
 
     except NotInRange as e:
