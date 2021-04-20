@@ -7,6 +7,7 @@ import json
 
 params_path ="params.yaml"
 schema_path = os.path.join("prediction_service", "schema.json")
+model_dir = os.path.join("prediction_service", "model.joblib")
 
 
 
@@ -33,8 +34,8 @@ def read_params(config_path=params_path):
 
 
 def predict(data):
-    config = read_params(params_path)
-    model_path = config['model_dir']
+    #config = read_params(params_path)
+    model_path = model_dir
     model = joblib.load(model_path)
     prediction = model.predict(data).tolist()[0]
 
