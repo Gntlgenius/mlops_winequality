@@ -4,36 +4,20 @@ import numpy as np
 from src.get_data import read_params
 import joblib
 
-#from prediction_service import predict_mgt
+from prediction_service.prediction import predictor
 
 
 
 params_path = "params.yaml"
 webapp_root ="webapp"
+my_predictor = predictor()
 
 static_dir = os.path.join(webapp_root, "static")
 template_dir = os.path.join(webapp_root, "templates")
 
 app = Flask(__name__, static_folder=static_dir, template_folder=template_dir)
 
-def predict(data):
-    config = read_params(params_path)
-    model_path = config["model_dir"]
-    model = joblib.load(model_path)
-    prediction = model.predict(data)
-    return prediction[0]
 
-
-def api_response(request):
-    try:
-        data = np.array([list(request.json.values())])
-        response = predict(data)
-        response = {'response':response}
-        return response
-    except Exception as e:
-        print (e)
-        error = {"error":"Something went wrong in api_response"}
-        return error
 
 @app.route("/", methods =['POST','GET'])
 def home():
@@ -42,10 +26,13 @@ def home():
             if request.form:
                 values = dict(request.form).values()
                 data = [list(map(float, values))]
-                response = predict(data)
+                pred = predictor(data) #object initialization
+                response = pred.form_response() #function calling
                 return render_template("index.html", response=response)
             elif request.json:
-                response = api_response(request)
+                data = request.json
+                pred = predictor(data) #object initialization
+                response = pred.api_response()
                 return jsonify(response)
                 
         except Exception as e:

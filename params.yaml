@@ -31,4 +31,5 @@ reports:
   scores: reports/scores.json
 
 model_dir: prediction_service\model\model.joblib
+schema_dir: prediction_service\schema.json
 
