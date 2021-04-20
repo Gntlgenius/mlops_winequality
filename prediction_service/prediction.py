@@ -90,7 +90,7 @@ def api_response(dict_req):
         response = {"the_exected_range": get_schema(), "response": str(e) }
         return response
 
-    except NotInCols as e:
+    except NotInColumn as e:
         response = {"the_exected_cols": get_schema().keys(), "response": str(e) }
         return response
 
